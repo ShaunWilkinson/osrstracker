@@ -82,6 +82,7 @@ class IndexController {
 
 			return {
 				name: recipe.name,
+				type: recipe.type || 'N/A',
 				geLowPrice,
 				geLowPriceTime,
 				geHighPrice,
@@ -96,7 +97,13 @@ class IndexController {
 			};
 		});
 
-		return recipesOutput;
+		return recipesOutput.sort((a, b) => {
+			// Sort by profitPercentHigh descending, then profitHigh descending
+			if (b.profitPercentHigh === a.profitPercentHigh) {
+				return (b.profitHigh || 0) - (a.profitHigh || 0);
+			}
+			return (b.profitPercentHigh || 0) - (a.profitPercentHigh || 0);
+		});
 	}
 
 	// Helper to fetch prices for a list of item IDs

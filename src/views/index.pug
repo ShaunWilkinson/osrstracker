@@ -10,74 +10,76 @@ html
 			.profit { color: green; font-weight: bold; }
 			.loss { color: red; font-weight: bold; }
 	body
-		h1 Recipe Flips 
-		p Potential Profit shows the estimated profit range based on buying all Recipe items at the High Price and selling at the Recipe Low Price vs buying all Recipe Items at the Low Price and selling for the High Price.
-		- var anyOutdated = recipes && recipes.some(r => r.items.outdatedWarning)
-		if anyOutdated
-			div(style="color: orange; font-weight: bold; margin-bottom: 1em;")
-				| Warning: Some recipe prices may be outdated (High price is not greater than Low price). Displayed High price has been set to match Low price.
-		table
-			thead 
-				tr 
-					th Item 
-					th Potential Profit 
-					th GE Price 
-					th Volume 
-			tbody 
-				if recipes.length == 0
-					tr 
-						td(colspan="4") No data available.
-				else 
-					each recipe, idx in recipes 
-						tr(onclick=`toggleRecipeDetails(${idx})`, style="cursor:pointer;")
-							td 
-								p 
-									a(href=`https://oldschool.runescape.wiki/w/${recipe.name.replaceAll(" ", "_")}`) #{recipe.name}
-									if recipe.items.some(item => item.outdatedWarning)
-										span(style="color: orange; font-size: 0.9em;")  ⚠ Outdated
-							td 
-								if recipe.profitHigh === 'N/A' 
-									| N/A 
-								else 
-									span(class=(recipe.profitLow > 0 ? 'profit' : 'loss')) #{Number(recipe.profitLow).toLocaleString("en-GB")}
-									|  - 
-									span(class=(recipe.profitHigh > 0 ? 'profit' : 'loss')) #{Number(recipe.profitHigh).toLocaleString("en-GB")} 
-									span(style="font-size: 0.8em; color: #666") (#{recipe.profitPercentHigh ? recipe.profitPercentHigh.toFixed(2) + '%' : 'N/A'}) 
+		if recipes.length == 0
+			p No recipe data available.
+		else
+			for recipeType of [...new Set(recipes.map(r => r.type))] 
+				- const recipesOfType = recipes.filter(r => r.type === recipeType);
 
-							td 
-								| #{recipe.geLowPrice !== 'N/A' ? Number(recipe.geLowPrice).toLocaleString("en-GB") : 'N/A'} -
-								| #{recipe.geHighPrice !== 'N/A' ? Number(recipe.geHighPrice).toLocaleString("en-GB") : 'N/A'} 
-								span(style="font-size: 0.8em; color: #666") (#{recipe.geHighPriceTime}) 
+				h1 #{recipeType}
+				p Potential Profit shows the estimated profit range based on buying all Recipe items at the High Price and selling at the Recipe Low Price vs buying all Recipe Items at the Low Price and selling for the High Price.
+				- var anyOutdated = recipes && recipes.some(r => r.items.outdatedWarning)
+				if anyOutdated
+					div(style="color: orange; font-weight: bold; margin-bottom: 1em;")
+						| Warning: Some recipe prices may be outdated (High price is not greater than Low price). Displayed High price has been set to match Low price.
+				table
+					thead 
+						tr 
+							th Item 
+							th Potential Profit 
+							th GE Price 
+							th Volume 
+					tbody 
+						if recipesOfType.length == 0
+							tr 
+								td(colspan="4") No data available.
+						else 
+							each recipe, idx in recipesOfType 
+								tr(onclick=`toggleRecipeDetails(${idx})`, style="cursor:pointer;")
+									td 
+										p 
+											a(href=`https://oldschool.runescape.wiki/w/${recipe.name.replaceAll(" ", "_")}`) #{recipe.name}
+											if recipe.items.some(item => item.outdatedWarning)
+												span(style="color: orange; font-size: 0.9em;")  ⚠ Outdated
+									td 
+										if recipe.profitHigh === 'N/A' 
+											| N/A 
+										else 
+											span(class=(recipe.profitLow > 0 ? 'profit' : 'loss')) #{Number(recipe.profitLow).toLocaleString("en-GB")}
+											|  - 
+											span(class=(recipe.profitHigh > 0 ? 'profit' : 'loss')) #{Number(recipe.profitHigh).toLocaleString("en-GB")} 
+											span(style="font-size: 0.8em; color: #666") (#{recipe.profitPercentHigh ? recipe.profitPercentHigh.toFixed(2) + '%' : 'N/A'}) 
 
-							td #{recipe.volume !== 'N/A' ? Number(recipe.volume).toLocaleString("en-GB") : 'N/A'} 
-								span(style="font-size: 0.8em; color: #666") (#{recipe.volumeTime})
-						tr(id=`recipe-details-${idx}` style="display:none;")
-							td(colspan="4")
-								- console.log(recipe.items)
-								//if recipe.items.find(item => item.outdatedWarning === true) > -1
-									p(style="color: orange; font-size: 0.9em;") ⚠ Outdated price info for this recipe
+									td 
+										| #{recipe.geLowPrice !== 'N/A' ? Number(recipe.geLowPrice).toLocaleString("en-GB") : 'N/A'} -
+										| #{recipe.geHighPrice !== 'N/A' ? Number(recipe.geHighPrice).toLocaleString("en-GB") : 'N/A'} 
+										span(style="font-size: 0.8em; color: #666") (#{recipe.geHighPriceTime}) 
 
-								table(style="margin:1em 0;width:100%;background:#f9f9f9;")
-									thead
-										tr
-											th Item
-											th Quantity
-											th Low Price
-											th High Price
-											th Low Price Volume
-											th High Price Volume
-									tbody
-										each item in recipe.items
-											tr
-												td 
-													a(href=`https://oldschool.runescape.wiki/w/${item.name.replaceAll(" ", "_")}`) #{item.name}
-												td #{item.quantity !== undefined ? item.quantity : 'N/A'}
-												td #{item.low !== undefined ? Number(item.low).toLocaleString('en-GB') : 'N/A'} 
-													span(style="font-size: 0.8em; color: #666") (#{item.lowTime})
-												td #{item.high !== undefined ? Number(item.high).toLocaleString('en-GB') : 'N/A'} 
-													span(style="font-size: 0.8em; color: #666") (#{item.highTime})
-												td #{item.lowVolume !== null && item.lowVolume !== undefined ? Number(item.lowVolume).toLocaleString('en-GB') : 'N/A'}
-												td #{item.highVolume !== null && item.highVolume !== undefined ? Number(item.highVolume).toLocaleString('en-GB') : 'N/A'}
+									td #{recipe.volume !== 'N/A' ? Number(recipe.volume).toLocaleString("en-GB") : 'N/A'} 
+										span(style="font-size: 0.8em; color: #666") (#{recipe.volumeTime})
+								tr(id=`recipe-details-${idx}` style="display:none;")
+									td(colspan="4")
+										table(style="margin:1em 0;width:100%;background:#f9f9f9;")
+											thead
+												tr
+													th Item
+													th Quantity
+													th Low Price
+													th High Price
+													th Low Price Volume
+													th High Price Volume
+											tbody
+												each item in recipe.items
+													tr
+														td 
+															a(href=`https://oldschool.runescape.wiki/w/${item.name.replaceAll(" ", "_")}`) #{item.name}
+														td #{item.quantity !== undefined ? item.quantity : 'N/A'}
+														td #{item.low !== undefined ? Number(item.low).toLocaleString('en-GB') : 'N/A'} 
+															span(style="font-size: 0.8em; color: #666") (#{item.lowTime})
+														td #{item.high !== undefined ? Number(item.high).toLocaleString('en-GB') : 'N/A'} 
+															span(style="font-size: 0.8em; color: #666") (#{item.highTime})
+														td #{item.lowVolume !== null && item.lowVolume !== undefined ? Number(item.lowVolume).toLocaleString('en-GB') : 'N/A'}
+														td #{item.highVolume !== null && item.highVolume !== undefined ? Number(item.highVolume).toLocaleString('en-GB') : 'N/A'}
 
 			script.
 				function toggleDetails(idx) {
